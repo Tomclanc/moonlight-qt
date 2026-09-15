@@ -13,6 +13,7 @@ Item {
     property color fill: Theme.surface
     property color borderColor: Theme.line
     property int borderWidth: 1
+    property real cornerRadius: Theme.radiusCard
 
     // 左侧粗条。宽度给 0 就不画。
     property color accentBarColor: Theme.accent
@@ -40,6 +41,7 @@ Item {
         y: body.y + root.shadowDepth
         width: body.width
         height: body.height
+        radius: root.cornerRadius
         color: Theme.shadowColor
     }
 
@@ -51,7 +53,8 @@ Item {
         width: root.width
         height: root.height
 
-        radius: 0
+        radius: root.cornerRadius
+        clip: root.cornerRadius > 0
         color: root.fill
         border.width: root.borderWidth
         border.color: root.borderColor

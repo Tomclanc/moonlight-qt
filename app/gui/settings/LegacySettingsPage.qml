@@ -163,6 +163,24 @@ Column {
         }
 
         ChoiceRow {
+            title: qsTr("Appearance")
+            description: qsTr("Choose a light or dark interface, or follow the system setting.")
+            maximumControlWidth: 260
+            controlWidth: 260
+            selectedValue: StreamingPreferences.colorTheme
+            onValueActivated: function(value) {
+                StreamingPreferences.colorTheme = value
+                StreamingPreferences.save()
+            }
+
+            model: ListModel {
+                ListElement { text: qsTr("Follow system"); val: StreamingPreferences.THEME_SYSTEM }
+                ListElement { text: qsTr("Dark"); val: StreamingPreferences.THEME_DARK }
+                ListElement { text: qsTr("Light"); val: StreamingPreferences.THEME_LIGHT }
+            }
+        }
+
+        ChoiceRow {
             applicable: SystemProperties.hasDesktopEnvironment
             title: qsTr("Window display mode")
             description: qsTr("Choose how Moonlight opens when the application starts.")
