@@ -1,5 +1,8 @@
 # Moonlight V+ for PC
 
+> [!NOTE]
+> `personal-ui-theme` is an unofficial visual customization by [Tomclanc](https://github.com/Tomclanc), based on personal aesthetic preferences. It does not represent the default design direction of the Moonlight V+ project. See [Personal UI Customization](PERSONAL_UI_CUSTOMIZATION.md) for details and scope.
+
 [中文](README.md)
 
 [![Build](https://img.shields.io/github/actions/workflow/status/qiin2333/moonlight-qt/build.yml?branch=master)](https://github.com/qiin2333/moonlight-qt/actions/workflows/build.yml?query=branch%3Amaster)

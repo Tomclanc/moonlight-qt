@@ -165,7 +165,8 @@ Item {
             // 描边用 2px accent，和全应用的焦点表达统一（以前这里是 1px 白，
             // 各处焦点框粗细和颜色都不一样，看着像三套设计）。
             background: Rectangle {
-                radius: 0
+                radius: Theme.radiusControl
+                clip: true
                 color: item.current ? Theme.accentSoft
                                     : (item.hovered || item.visualFocus ? Theme.surface2 : "transparent")
                 border.width: item.visualFocus ? 2 : 0
@@ -203,17 +204,27 @@ Item {
                 implicitWidth: Theme.spaceMd + categoryIcon.width + Theme.spaceSm + categoryText.implicitWidth
                 implicitHeight: Math.max(categoryIcon.height, categoryText.implicitHeight)
 
-                Image {
+                ToolButton {
                     id: categoryIcon
                     x: Theme.spaceMd
                     anchors.verticalCenter: parent.verticalCenter
-                    source: modelData.icon
-                    // 按 2x 栅格化，Retina 上才不会糊
-                    sourceSize.width: 18
-                    sourceSize.height: 18
                     width: 18
                     height: 18
-                    // 图标本身是白的，靠透明度区分选中与否
+                    padding: 0
+                    focusPolicy: Qt.NoFocus
+                    enabled: false
+                    display: AbstractButton.IconOnly
+
+                    icon.source: modelData.icon
+                    icon.width: 18
+                    icon.height: 18
+                    // SVG 原图是白色。由 ToolButton 在渲染时按主题重新着色：
+                    // 亮色模式使用深色文字色，深色模式自动恢复浅色。
+                    icon.color: Theme.text
+
+                    background: Item {}
+
+                    // 当前项保持清晰，未选中项降低一点视觉重量。
                     opacity: item.current ? 1.0 : 0.6
 
                     Behavior on opacity {

@@ -8,7 +8,11 @@ AbstractButton {
 
     property string controlType
     property string accessibleName
-    property color highlightColor: Theme.accent
+    readonly property bool destructive: controlType === "close"
+    property color highlightColor: destructive ? Theme.danger : Theme.surface2
+    property color pressedColor: destructive
+                                 ? Qt.darker(Theme.danger, 1.14)
+                                 : Theme.accentSoft
 
     width: 44
     height: 56
@@ -18,21 +22,49 @@ AbstractButton {
     Accessible.name: accessibleName
     Accessible.role: Accessible.Button
 
-    ToolTip.delay: 700
-    ToolTip.timeout: 2500
-    ToolTip.visible: hovered
-    ToolTip.text: accessibleName
+    // Material's shared attached tooltip forces Material.Dark. Use a local
+    // instance so the background and text can follow Moonlight's chosen theme.
+    ToolTip {
+        id: windowControlTip
+        parent: control
+        visible: control.hovered
+        text: control.accessibleName
+        delay: 700
+        timeout: 2500
+        x: (control.width - width) / 2
+        y: control.height - Theme.spaceXs
+        margins: Theme.spaceSm
+        padding: Theme.spaceSm
+        opacity: 1.0
+        font.family: Theme.fontSans
+        font.pointSize: Theme.fontBody
+
+        background: Rectangle {
+            radius: Theme.radiusControl
+            color: Theme.isLight ? Theme.surface : Theme.surface2
+            border.width: 1
+            border.color: Theme.lineStrong
+        }
+
+        contentItem: Text {
+            text: windowControlTip.text
+            color: Theme.text
+            font: windowControlTip.font
+            verticalAlignment: Text.AlignVCenter
+        }
+    }
 
     background: Rectangle {
-        color: control.down ? Qt.darker(control.highlightColor, 1.18)
+        color: control.down ? control.pressedColor
                             : (control.hovered ? control.highlightColor : "transparent")
 
         Rectangle {
             anchors.left: parent.left
             width: 1
             height: parent.height
-            color: control.hovered ? Qt.rgba(15 / 255, 17 / 255, 21 / 255, 0.28)
-                                   : Theme.line
+            color: control.hovered
+                   ? (control.destructive ? Theme.danger : Theme.lineStrong)
+                   : Theme.line
         }
 
         Rectangle {
@@ -40,7 +72,7 @@ AbstractButton {
             anchors.right: parent.right
             anchors.bottom: parent.bottom
             height: control.hovered ? 3 : 0
-            color: Theme.ink
+            color: control.destructive ? Theme.danger : Theme.accent
         }
 
         Behavior on color {
@@ -50,7 +82,9 @@ AbstractButton {
 
     contentItem: Item {
         readonly property color strokeColor:
-            (control.hovered || control.down) ? Theme.ink : Theme.textDim
+            (control.hovered || control.down)
+            ? (control.destructive ? Theme.ink : Theme.text)
+            : Theme.textDim
 
         Rectangle {
             visible: control.controlType === "minimize"

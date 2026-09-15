@@ -706,7 +706,9 @@ win32 {
     QMAKE_TARGET_PRODUCT = Moonlight V+ for PC
 
     CONFIG -= embed_manifest_exe
-    QMAKE_LFLAGS += /MANIFEST:embed /MANIFESTINPUT:$${PWD}/Moonlight.exe.manifest
+    # The build script copies this file beside the generated Makefile. Keeping
+    # the linker argument relative also supports source trees whose path has spaces.
+    QMAKE_LFLAGS += /MANIFEST:embed /MANIFESTINPUT:Moonlight.exe.manifest
 }
 macx {
     # Create Info.plist in object dir with the correct version string

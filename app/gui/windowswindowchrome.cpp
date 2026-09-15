@@ -10,6 +10,7 @@
 #ifdef Q_OS_WIN32
 #include <windows.h>
 #include <windowsx.h>
+#include <dwmapi.h>
 
 namespace {
 const char* visibilityName(QWindow::Visibility visibility)
@@ -147,6 +148,22 @@ void WindowsWindowChrome::setTitleBar(QQuickItem* titleBar)
     emit titleBarChanged();
 }
 
+bool WindowsWindowChrome::darkMode() const
+{
+    return m_DarkMode;
+}
+
+void WindowsWindowChrome::setDarkMode(bool darkMode)
+{
+    if (m_DarkMode == darkMode) {
+        return;
+    }
+
+    m_DarkMode = darkMode;
+    applyNativeAppearance();
+    emit darkModeChanged();
+}
+
 bool WindowsWindowChrome::isMaximized() const
 {
 #ifdef Q_OS_WIN32
@@ -193,7 +210,43 @@ void WindowsWindowChrome::activate()
         qWarning() << "Failed to refresh native window frame:" << error;
     }
 
+    applyNativeAppearance();
+
     m_Maximized = IsZoomed(nativeWindow);
+#endif
+}
+
+void WindowsWindowChrome::applyNativeAppearance()
+{
+#ifdef Q_OS_WIN32
+    if (!m_WindowId) {
+        return;
+    }
+
+    const HWND nativeWindow = reinterpret_cast<HWND>(m_WindowId);
+
+    // Windows 11 attributes are passed by their stable documented values so
+    // this still builds with older SDK headers. Unsupported systems simply
+    // reject the attributes and retain the normal opaque Qt background.
+    constexpr auto useImmersiveDarkMode = static_cast<DWMWINDOWATTRIBUTE>(20);
+    constexpr auto windowCornerPreference = static_cast<DWMWINDOWATTRIBUTE>(33);
+    constexpr auto systemBackdropType = static_cast<DWMWINDOWATTRIBUTE>(38);
+    constexpr int roundCorners = 2;  // DWMWCP_ROUND
+    constexpr int mainWindowBackdrop = 2;  // DWMSBT_MAINWINDOW (Mica)
+
+    const BOOL darkMode = m_DarkMode ? TRUE : FALSE;
+    DwmSetWindowAttribute(nativeWindow,
+                          useImmersiveDarkMode,
+                          &darkMode,
+                          sizeof(darkMode));
+    DwmSetWindowAttribute(nativeWindow,
+                          windowCornerPreference,
+                          &roundCorners,
+                          sizeof(roundCorners));
+    DwmSetWindowAttribute(nativeWindow,
+                          systemBackdropType,
+                          &mainWindowBackdrop,
+                          sizeof(mainWindowBackdrop));
 #endif
 }
 

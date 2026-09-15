@@ -55,6 +55,7 @@ ApplicationWindow {
         id: windowsWindowChrome
         window: window
         titleBar: titleDragRegion
+        darkMode: !Theme.isLight
     }
 
     // Windows 保留标准顶层窗口状态和系统命令，只由 WindowsWindowChrome 移除
@@ -84,17 +85,29 @@ ApplicationWindow {
     // that palette follows the system appearance regardless of the color scheme we
     // ask for. Pin it so pages we haven't given a background of their own (the
     // connection spinner, the quit page) are never white-on-white.
-    color: Theme.ink
+    // A transparent Qt client surface lets the Windows 11 system backdrop show
+    // through. Other platforms keep the normal solid application background.
+    color: Qt.platform.os === "windows" ? "transparent" : Theme.ink
+
+    MaterialStyle.Material.theme: Theme.isLight ? MaterialStyle.Material.Light : MaterialStyle.Material.Dark
+    MaterialStyle.Material.background: Theme.ink
+    MaterialStyle.Material.foreground: Theme.text
+    MaterialStyle.Material.accent: Theme.accent
+
+    palette.window: Theme.ink
+    palette.windowText: Theme.text
+    palette.base: Theme.surface
+    palette.alternateBase: Theme.surface2
+    palette.text: Theme.text
+    palette.button: Theme.surface2
+    palette.buttonText: Theme.text
+    palette.highlight: Theme.accent
+    palette.highlightedText: Theme.ink
+    palette.placeholderText: Theme.textFaint
+    palette.link: Theme.accent
 
     // This function runs prior to creation of the initial StackView item
     function doEarlyInit() {
-        // Override the background color to Material 2 colors for Qt 6.5+
-        // in order to improve contrast between GFE's placeholder box art
-        // and the background of the app grid.
-        if (SystemProperties.usesMaterial3Theme) {
-            MaterialStyle.Material.background = "#303030"
-        }
-
         SdlGamepadKeyNavigation.enable()
     }
 
@@ -275,6 +288,24 @@ ApplicationWindow {
         // it will never insert a line break and just extend on forever.
         ToolTip.toolTip.contentWidth: Math.min(tooltipTextLayoutHelper.width, 400)
         ToolTip.toolTip.margins: 8
+        ToolTip.toolTip.padding: Theme.spaceSm
+        ToolTip.toolTip.font.family: Theme.fontSans
+        ToolTip.toolTip.font.pointSize: Theme.fontBody
+
+        ToolTip.toolTip.background: Rectangle {
+            radius: Theme.radiusControl
+            color: Theme.surface2Layer
+            border.width: 1
+            border.color: Theme.lineStrong
+        }
+
+        ToolTip.toolTip.contentItem: Text {
+            text: ToolTip.toolTip.text
+            color: Theme.text
+            font: ToolTip.toolTip.font
+            wrapMode: Text.Wrap
+            verticalAlignment: Text.AlignVCenter
+        }
 
         ToolTip.toolTip.onVisibleChanged: {
             if (ToolTip.toolTip.visible) ToolTip.toolTip.y = toolBar.height - 5
@@ -593,13 +624,10 @@ ApplicationWindow {
 
                 iconSource: "qrc:/res/qq-2.svg"
 
-                ToolTip.delay: 1000
-                ToolTip.timeout: 3000
-                ToolTip.visible: hovered
                 // 源串必须是英文：这个仓库的源语言是 en_GB，中文源串会变成 28 个
                 // 语言包里的 msgid，而且全都 unfinished —— 英语用户看到的就是那四个
                 // 中文字。梗放到 zh_CN 的译文里，两边都能要。
-                ToolTip.text: qsTr("Join our QQ group")
+                themedToolTipText: qsTr("Join our QQ group")
 
                 // TODO need to make sure browser is brought to foreground.
                 onClicked: Qt.openUrlExternally("https://qm.qq.com/cgi-bin/qm/qr?k=wI7aTvDQdd900n1L_wjjJw3qNP0yOgUa&jump_from=webapi&authKey=CDBn7sGy7HpCKYTcFmoEdNuG/zmkrBWUC/W5A/oZZycKzXwuO/XFCA97IpJRktj3");
@@ -615,10 +643,7 @@ ApplicationWindow {
 
                 iconSource:  "qrc:/res/fluent/tb-add-pc.svg"
 
-                ToolTip.delay: 1000
-                ToolTip.timeout: 3000
-                ToolTip.visible: hovered
-                ToolTip.text: qsTr("Add PC manually") + (newPcShortcut.nativeText ? (" ("+newPcShortcut.nativeText+")") : "")
+                themedToolTipText: qsTr("Add PC manually") + (newPcShortcut.nativeText ? (" ("+newPcShortcut.nativeText+")") : "")
 
                 Shortcut {
                     id: newPcShortcut
@@ -642,9 +667,7 @@ ApplicationWindow {
 
                 iconSource: "qrc:/res/fluent/tb-update.svg"
 
-                ToolTip.delay: 1000
-                ToolTip.timeout: 3000
-                ToolTip.visible: hovered || visible
+                themedToolTipVisible: hovered || visible
 
                 // Invisible until we get a callback notifying us that
                 // an update is available
@@ -663,7 +686,7 @@ ApplicationWindow {
 
                 function updateAvailable(version, url)
                 {
-                    ToolTip.text = Brand.text(qsTr("Update available for Moonlight: Version %1")).arg(version)
+                    themedToolTipText = Brand.text(qsTr("Update available for Moonlight: Version %1")).arg(version)
                     updateButton.browserUrl = url
                     updateButton.visible = true
                 }
@@ -703,10 +726,7 @@ ApplicationWindow {
 
                 iconSource: "qrc:/res/fluent/tb-help.svg"
 
-                ToolTip.delay: 1000
-                ToolTip.timeout: 3000
-                ToolTip.visible: hovered
-                ToolTip.text: qsTr("Help") + (helpShortcut.nativeText ? (" ("+helpShortcut.nativeText+")") : "")
+                themedToolTipText: qsTr("Help") + (helpShortcut.nativeText ? (" ("+helpShortcut.nativeText+")") : "")
 
                 Shortcut {
                     id: helpShortcut
@@ -726,10 +746,7 @@ ApplicationWindow {
                 // TODO: Implement gamepad mapping then unhide this button
                 visible: false
 
-                ToolTip.delay: 1000
-                ToolTip.timeout: 3000
-                ToolTip.visible: hovered
-                ToolTip.text: qsTr("Gamepad Mapper")
+                themedToolTipText: qsTr("Gamepad Mapper")
 
                 iconSource: "qrc:/res/fluent/tb-gamepad.svg"
 
@@ -747,10 +764,7 @@ ApplicationWindow {
 
                 iconSource: "qrc:/res/fluent/tb-network.svg"
 
-                ToolTip.delay: 1000
-                ToolTip.timeout: 3000
-                ToolTip.visible: hovered
-                ToolTip.text: qsTr("Connection IP")
+                themedToolTipText: qsTr("Connection IP")
 
                 onClicked: {
                     if (stackView.currentItem.openIpDialog) {
@@ -769,10 +783,7 @@ ApplicationWindow {
 
                 iconSource: "qrc:/res/fluent/tb-display.svg"
 
-                ToolTip.delay: 1000
-                ToolTip.timeout: 3000
-                ToolTip.visible: hovered
-                ToolTip.text: qsTr("Display Settings")
+                themedToolTipText: qsTr("Display Settings")
 
                 onClicked: {
                     if (stackView.currentItem.openDisplayDialog) {
@@ -806,10 +817,7 @@ ApplicationWindow {
                     onActivated: settingsButton.clicked()
                 }
 
-                ToolTip.delay: 1000
-                ToolTip.timeout: 3000
-                ToolTip.visible: hovered
-                ToolTip.text: qsTr("Settings") + (settingsShortcut.nativeText ? (" ("+settingsShortcut.nativeText+")") : "")
+                themedToolTipText: qsTr("Settings") + (settingsShortcut.nativeText ? (" ("+settingsShortcut.nativeText+")") : "")
             }
         }
 
@@ -824,7 +832,6 @@ ApplicationWindow {
             WindowControlButton {
                 controlType: "minimize"
                 accessibleName: qsTr("Minimize")
-                highlightColor: Theme.acid
                 onClicked: windowsWindowChrome.minimize()
             }
 
@@ -832,14 +839,12 @@ ApplicationWindow {
                 controlType: windowsWindowChrome.maximized ? "restore" : "maximize"
                 accessibleName: windowsWindowChrome.maximized
                                 ? qsTr("Restore") : qsTr("Maximize")
-                highlightColor: Theme.accent
                 onClicked: windowsWindowChrome.toggleMaximized()
             }
 
             WindowControlButton {
                 controlType: "close"
                 accessibleName: qsTr("Close")
-                highlightColor: Theme.danger
                 onClicked: windowsWindowChrome.close()
             }
         }

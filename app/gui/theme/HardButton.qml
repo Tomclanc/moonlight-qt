@@ -20,6 +20,7 @@ Button {
     background: Panel {
         implicitWidth: 96
         implicitHeight: 34
+        cornerRadius: Theme.radiusControl
 
         fill: control.primary
               ? (control.down ? Theme.accentDim

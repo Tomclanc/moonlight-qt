@@ -120,7 +120,7 @@ ComboBox {
         implicitWidth: 120
         implicitHeight: 34
 
-        radius: 0
+        radius: Theme.radiusControl
         color: control.pressed ? Theme.surface : Theme.surface2
         // hover 是 1px lineStrong，focus 是 2px accent —— 两个维度都不同，
         // 免得「鼠标停在上面」和「焦点在这里」看起来一模一样。
@@ -167,7 +167,7 @@ ComboBox {
         }
 
         background: Rectangle {
-            radius: 0
+            radius: Theme.radiusControl
             color: comboItem.highlighted ? Theme.surface2 : "transparent"
 
             // 当前值左边一条 accent 粗条。原来那颗圆点是 Fluent 的语言，
@@ -251,6 +251,7 @@ ComboBox {
         background: Panel {
             fill: Theme.surfaceLayer
             borderColor: Theme.accent
+            cornerRadius: Theme.radiusControl
         }
 
         contentItem: ListView {

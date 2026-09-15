@@ -1393,6 +1393,26 @@
         <translation>你必须重新启动 Moonlight 才能使更改生效</translation>
     </message>
     <message>
+        <source>Appearance</source>
+        <translation>外观模式</translation>
+    </message>
+    <message>
+        <source>Choose a light or dark interface, or follow the system setting.</source>
+        <translation>选择亮色或深色界面，也可以跟随系统设置。</translation>
+    </message>
+    <message>
+        <source>Follow system</source>
+        <translation>跟随系统</translation>
+    </message>
+    <message>
+        <source>Dark</source>
+        <translation>深色</translation>
+    </message>
+    <message>
+        <source>Light</source>
+        <translation>亮色</translation>
+    </message>
+    <message>
         <source>Window display mode</source>
         <translation>窗口显示模式</translation>
     </message>

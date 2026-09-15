@@ -163,7 +163,8 @@ FocusScope {
 
             // 分类栏底板。方角 + 1px 描边，不用硬投影：它贴着窗口左边，
             // 投影只会在右侧和内容区挤在一起。
-            radius: 0
+            radius: Theme.radiusCard
+            clip: true
             color: Theme.surfaceLayer
             border.width: 1
             border.color: Theme.line

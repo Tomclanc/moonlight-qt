@@ -12,22 +12,43 @@ TextField {
     id: control
 
     color: Theme.text
-    placeholderTextColor: Theme.textFaint
+    // Material promotes the placeholder above a focused field. Hide that native
+    // placeholder and draw our own fixed, vertically centred hint instead.
+    placeholderTextColor: "transparent"
     selectByMouse: true
+    verticalAlignment: TextInput.AlignVCenter
 
     font.family: Theme.fontMono
     font.pointSize: Theme.fontBody
 
     leftPadding: Theme.spaceSm
     rightPadding: Theme.spaceSm
-    topPadding: Theme.spaceXs
-    bottomPadding: Theme.spaceXs
+    topPadding: 0
+    bottomPadding: 0
+
+    Text {
+        anchors {
+            left: parent.left
+            right: parent.right
+            leftMargin: control.leftPadding
+            rightMargin: control.rightPadding
+            verticalCenter: parent.verticalCenter
+        }
+        text: control.placeholderText
+        visible: control.text.length === 0
+        color: Theme.textFaint
+        font: control.font
+        verticalAlignment: Text.AlignVCenter
+        elide: Text.ElideRight
+        enabled: false
+        z: 2
+    }
 
     background: Rectangle {
         implicitWidth: 120
         implicitHeight: 32
 
-        radius: 0
+        radius: Theme.radiusControl
         color: Theme.ink
         // 输入框的焦点就是「光标在这里」，所以看 activeFocus 而不是 visualFocus。
         // 粗细/颜色的规矩和其他控件一致：focus 2px accent，hover 1px lineStrong。

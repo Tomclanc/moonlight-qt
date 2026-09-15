@@ -49,6 +49,7 @@
 #define SER_CONNWARNINGS "connwarnings"
 #define SER_CONFWARNINGS "confwarnings"
 #define SER_UIDISPLAYMODE "uidisplaymode"
+#define SER_COLORTHEME "colortheme"
 #define SER_REMEMBERWINDOWPOSITION "rememberwindowposition"
 #define SER_RICHPRESENCE "richpresence"
 #define SER_GAMEPADMOUSE "gamepadmouse"
@@ -206,6 +207,21 @@ StreamingPreferences* StreamingPreferences::get(QQmlEngine *qmlEngine)
     }
 }
 
+StreamingPreferences::ColorTheme StreamingPreferences::colorTheme() const
+{
+    return m_ColorTheme;
+}
+
+void StreamingPreferences::setColorTheme(ColorTheme theme)
+{
+    if (m_ColorTheme == theme) {
+        return;
+    }
+
+    m_ColorTheme = theme;
+    emit colorThemeChanged();
+}
+
 void StreamingPreferences::reload()
 {
     QSettings settings;
@@ -326,6 +342,9 @@ void StreamingPreferences::reload()
     uiDisplayMode = static_cast<UIDisplayMode>(settings.value(SER_UIDISPLAYMODE,
                                                static_cast<int>(settings.value(SER_STARTWINDOWED, true).toBool() ? UIDisplayMode::UI_WINDOWED
                                                                                                                  : UIDisplayMode::UI_MAXIMIZED)).toInt());
+    setColorTheme(static_cast<ColorTheme>(qBound(static_cast<int>(THEME_SYSTEM),
+                                                 settings.value(SER_COLORTHEME, static_cast<int>(THEME_DARK)).toInt(),
+                                                 static_cast<int>(THEME_LIGHT))));
     rememberWindowPosition = settings.value(SER_REMEMBERWINDOWPOSITION, true).toBool();
     language = static_cast<Language>(settings.value(SER_LANGUAGE,
                                                     static_cast<int>(Language::LANG_AUTO)).toInt());
@@ -701,6 +720,7 @@ void StreamingPreferences::save()
     settings.setValue(SER_RENDERER, static_cast<int>(rendererSelection));
     settings.setValue(SER_WINDOWMODE, static_cast<int>(windowMode));
     settings.setValue(SER_UIDISPLAYMODE, static_cast<int>(uiDisplayMode));
+    settings.setValue(SER_COLORTHEME, static_cast<int>(m_ColorTheme));
     settings.setValue(SER_REMEMBERWINDOWPOSITION, rememberWindowPosition);
     settings.setValue(SER_LANGUAGE, static_cast<int>(language));
     settings.setValue(SER_BACKGROUNDSOURCE, static_cast<int>(m_BackgroundSource));
