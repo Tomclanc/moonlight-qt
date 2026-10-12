@@ -16,7 +16,45 @@ Flickable {
     clip: true
 
     ScrollBar.vertical: ScrollBar {
+        id: verticalBar
+
         policy: area.contentHeight > area.height ? ScrollBar.AsNeeded : ScrollBar.AlwaysOff
+        width: 12
+        padding: 2
+
+        // 细圆角轨道，保留足够的鼠标命中宽度。
+        background: Rectangle {
+            implicitWidth: 12
+            radius: width / 2
+            color: verticalBar.hovered || verticalBar.pressed
+                   ? Theme.surface2Layer : Qt.rgba(Theme.surface2.r,
+                                                   Theme.surface2.g,
+                                                   Theme.surface2.b, 0.45)
+            border.width: 1
+            border.color: Theme.line
+
+            Behavior on color {
+                ColorAnimation { duration: Theme.durFast }
+            }
+        }
+
+        // 滑块始终是胶囊形，拖动和悬停时提高对比度。
+        contentItem: Rectangle {
+            implicitWidth: 8
+            implicitHeight: 48
+            radius: width / 2
+            color: verticalBar.pressed ? Theme.accentDim
+                                       : (verticalBar.hovered ? Theme.lineStrong
+                                                              : Theme.textFaint)
+            opacity: verticalBar.active || verticalBar.hovered ? 0.9 : 0.65
+
+            Behavior on color {
+                ColorAnimation { duration: Theme.durFast }
+            }
+            Behavior on opacity {
+                NumberAnimation { duration: Theme.durFast }
+            }
+        }
     }
 
     Item {

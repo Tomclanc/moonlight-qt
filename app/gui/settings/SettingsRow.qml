@@ -32,7 +32,8 @@ FocusScope {
     // 「具体在这个控件上」，叠在一起也读得清。粗条也是这套设计里 Panel 现成的语汇。
     Rectangle {
         anchors.fill: parent
-        radius: 0
+        radius: Theme.radiusControl
+        clip: true
         color: ((row.hoverable && hoverArea.containsMouse) || row.activeFocus)
                ? Theme.surface2 : "transparent"
         border.width: 0

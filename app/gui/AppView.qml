@@ -423,8 +423,13 @@ CenteredGridView {
 
             Image {
                 property bool isPlaceholder: false
+                // QQuickWindow::devicePixelRatio is not exposed as a QML
+                // property in Qt 6.7. Reading Window.window.devicePixelRatio
+                // therefore produced undefined, which made sourceSize invalid
+                // and left every cached app cover blank. The Screen attached
+                // property is available on the Qt versions supported here.
                 readonly property real requestedDpr:
-                    Window.window ? Window.window.devicePixelRatio : 1
+                    Math.max(1, Screen.devicePixelRatio || 1)
 
                 id: appIcon
 

@@ -73,6 +73,14 @@ public:
     };
     Q_ENUM(UIDisplayMode)
 
+    enum ColorTheme
+    {
+        THEME_SYSTEM,
+        THEME_DARK,
+        THEME_LIGHT
+    };
+    Q_ENUM(ColorTheme)
+
     enum BackgroundSource
     {
         BGS_PHOTOGRAPHY,
@@ -251,6 +259,7 @@ public:
     Q_PROPERTY(WindowMode windowMode MEMBER windowMode NOTIFY windowModeChanged)
     Q_PROPERTY(WindowMode recommendedFullScreenMode MEMBER recommendedFullScreenMode CONSTANT)
     Q_PROPERTY(UIDisplayMode uiDisplayMode MEMBER uiDisplayMode NOTIFY uiDisplayModeChanged)
+    Q_PROPERTY(ColorTheme colorTheme READ colorTheme WRITE setColorTheme NOTIFY colorThemeChanged)
     Q_PROPERTY(bool rememberWindowPosition MEMBER rememberWindowPosition NOTIFY rememberWindowPositionChanged)
     Q_PROPERTY(BackgroundSource backgroundSource READ backgroundSource WRITE setBackgroundSource NOTIFY backgroundConfigurationChanged)
     Q_PROPERTY(QString backgroundImageApi READ backgroundImageApi WRITE setBackgroundImageApi NOTIFY backgroundConfigurationChanged)
@@ -278,6 +287,9 @@ public:
 
     QStringList usbForwardingBoundDevices() const { return m_UsbForwardingBoundDevices; }
     void setUsbForwardingBoundDevices(const QStringList& devices);
+
+    ColorTheme colorTheme() const;
+    void setColorTheme(ColorTheme theme);
 
     // Directly accessible members for preferences
     int width;
@@ -340,6 +352,7 @@ public:
     WindowMode windowMode;
     WindowMode recommendedFullScreenMode;
     UIDisplayMode uiDisplayMode;
+    ColorTheme m_ColorTheme = THEME_DARK;
     bool rememberWindowPosition;
     Language language;
     CaptureSysKeysMode captureSysKeysMode;
@@ -379,6 +392,7 @@ signals:
     void enableYUV444Changed();
     void videoDecoderSelectionChanged();
     void uiDisplayModeChanged();
+    void colorThemeChanged();
     void rememberWindowPositionChanged();
     void backgroundConfigurationChanged();
     void backgroundOverlayOpacityChanged();
