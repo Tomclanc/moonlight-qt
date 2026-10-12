@@ -171,6 +171,11 @@ pushd %BUILD_FOLDER%
 if !ERRORLEVEL! NEQ 0 goto Error
 popd
 
+rem app.pro passes the manifest to link.exe by a relative path, so keep a copy
+rem beside the generated app Makefile for out-of-source builds.
+copy /Y "%SOURCE_ROOT%\app\Moonlight.exe.manifest" "%BUILD_FOLDER%\app\Moonlight.exe.manifest"
+if !ERRORLEVEL! NEQ 0 goto Error
+
 rem Locate jom.exe or fall back to nmake.exe
 where /q jom.exe
 if !ERRORLEVEL! EQU 0 (
