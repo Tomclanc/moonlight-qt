@@ -6,6 +6,7 @@
 #include <QIcon>
 #include <QLibraryInfo>
 #include <QQuickStyle>
+#include <QQuickWindow>
 #include <QMutex>
 #include <QtDebug>
 #include <QNetworkProxyFactory>
@@ -20,6 +21,12 @@
 #include <QFile>
 #include <QFileInfo>
 #include <QStandardPaths>
+#include <QLockFile>
+#include <QLocalServer>
+#include <QLocalSocket>
+#include <QCryptographicHash>
+#include <QThread>
+#include <memory>
 
 #ifdef Q_OS_UNIX
 #include <sys/socket.h>
@@ -775,6 +782,9 @@ static bool styleQmlAvailable(const QString& style)
 int main(int argc, char *argv[])
 {
     SDL_SetMainReady();
+#ifdef Q_OS_WIN32
+    QQuickWindow::setDefaultAlphaBuffer(true);
+#endif
 
     const QString startupApplicationDir = getStartupApplicationDir(argc > 0 ? argv[0] : nullptr);
 
@@ -821,7 +831,9 @@ int main(int argc, char *argv[])
     if (IS_UNSPECIFIED_HANDLE(oldConErr))
 #endif
     {
-        s_LoggerFile = new QFile(logDir.filePath(QString("Moonlight-%1.log").arg(QDateTime::currentSecsSinceEpoch())));
+        // Rapid duplicate launches must not truncate the primary process log.
+        s_LoggerFile = new QFile(logDir.filePath(QString("Moonlight-%1-%2.log")
+                .arg(QDateTime::currentSecsSinceEpoch()).arg(QCoreApplication::applicationPid())));
         if (s_LoggerFile->open(QIODevice::WriteOnly | QIODevice::Text)) {
             QTextStream(stderr) << "Redirecting log output to " << s_LoggerFile->fileName() << Qt::endl;
             s_LoggerStream.setDevice(s_LoggerFile);
@@ -1208,6 +1220,100 @@ int main(int argc, char *argv[])
 
     GlobalCommandLineParser parser;
     GlobalCommandLineParser::ParseResult commandLineParserResult = parser.parse(app.arguments());
+#ifdef Q_OS_WIN32
+    // Only interactive launches share a window. CLI stream/pair/quit/list
+    // commands retain their existing behavior and must not be swallowed.
+    std::unique_ptr<QLockFile> instanceLock;
+    QLocalServer instanceServer;
+    if (commandLineParserResult == GlobalCommandLineParser::NormalStartRequested) {
+        DWORD sessionId = 0;
+        ProcessIdToSessionId(GetCurrentProcessId(), &sessionId);
+        const QByteArray identity = QStandardPaths::writableLocation(
+                    QStandardPaths::GenericDataLocation).toUtf8() + QByteArray::number(sessionId);
+        const QString endpoint = QStringLiteral("MoonlightVPlus-GUI-") +
+                QString::fromLatin1(QCryptographicHash::hash(identity, QCryptographicHash::Sha256).toHex().left(24));
+        instanceLock.reset(new QLockFile(QDir::temp().filePath(endpoint + QStringLiteral(".lock"))));
+        instanceLock->setStaleLockTime(0);
+        if (!instanceLock->tryLock()) {
+            // The first instance may still be initializing its server. Wait
+            // briefly without ever starting a competing GUI or stealing its lock.
+            for (int attempt = 0; attempt < 30; ++attempt) {
+                QLocalSocket socket;
+                socket.connectToServer(endpoint);
+                if (socket.waitForConnected(100)) {
+                    if (socket.bytesAvailable() || socket.waitForReadyRead(1000)) {
+                        bool ok = false;
+                        const DWORD ownerPid = socket.readLine().trimmed().toUInt(&ok);
+                        if (ok) {
+                            // Pass our foreground permission to the existing
+                            // process before asking it to raise its window.
+                            AllowSetForegroundWindow(ownerPid);
+                            socket.write("activate\n");
+                            socket.flush();
+                            socket.waitForBytesWritten(1000);
+                            qInfo() << "Single instance: activation forwarded to" << ownerPid;
+                            return 0;
+                        }
+                    }
+                }
+                QThread::msleep(100);
+            }
+            qWarning() << "Single instance: existing GUI is busy; no duplicate started";
+            return 1;
+        }
+        instanceServer.setSocketOptions(QLocalServer::UserAccessOption);
+        QObject::connect(&instanceServer, &QLocalServer::newConnection, &app, [&]() {
+            while (auto* socket = instanceServer.nextPendingConnection()) {
+                QObject::connect(socket, &QLocalSocket::disconnected, socket, &QObject::deleteLater);
+                QObject::connect(socket, &QLocalSocket::readyRead, &app, [socket]() {
+                    if (!socket->canReadLine()) {
+                        return;
+                    }
+                    if (socket->readLine() == "activate\n") {
+                        // EnumWindows also finds the SDL streaming window when
+                        // the Qt launcher is hidden during an active stream.
+                        HWND target = nullptr;
+                        EnumWindows([](HWND window, LPARAM data) -> BOOL {
+                            DWORD pid = 0;
+                            GetWindowThreadProcessId(window, &pid);
+                            if (pid == GetCurrentProcessId() && IsWindowVisible(window) &&
+                                    !GetWindow(window, GW_OWNER)) {
+                                *reinterpret_cast<HWND*>(data) = window;
+                                return FALSE;
+                            }
+                            return TRUE;
+                        }, reinterpret_cast<LPARAM>(&target));
+                        if (target) {
+                            if (IsIconic(target)) {
+                                ShowWindow(target, SW_RESTORE);
+                            }
+                            SetForegroundWindow(target);
+                        }
+                        else {
+                            for (QWindow* window : QGuiApplication::topLevelWindows()) {
+                                if (window->type() == Qt::Window) {
+                                    window->show();
+                                    window->raise();
+                                    window->requestActivate();
+                                    break;
+                                }
+                            }
+                        }
+                        qInfo() << "Single instance: existing window activated";
+                    }
+                    socket->disconnectFromServer();
+                });
+                socket->write(QByteArray::number(GetCurrentProcessId()) + '\n');
+                socket->flush();
+            }
+        });
+        if (!instanceServer.listen(endpoint)) {
+            qCritical() << "Single instance: cannot create activation server:" << instanceServer.errorString();
+            return 1;
+        }
+        qInfo() << "Single instance: primary GUI server ready";
+    }
+#endif
     switch (commandLineParserResult) {
     case GlobalCommandLineParser::ListRequested:
         // Don't log to the console since it will jumble the command output

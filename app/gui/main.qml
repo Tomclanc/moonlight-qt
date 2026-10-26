@@ -58,11 +58,12 @@ ApplicationWindow {
         darkMode: !Theme.isLight
     }
 
-    // Windows 保留标准顶层窗口状态和系统命令，只由 WindowsWindowChrome 移除
-    // 非客户区并绘制自定义标题栏。macOS 和 Linux 保留扩展客户区，由各自窗口
-    // 系统继续处理原生标题栏行为。
+    // Create Windows without a native caption from the very first HWND/frame.
+    // Adding Mica to an initially decorated transparent window can retain its
+    // old caption/border in the compositor surface after resize/maximize.
+    // WindowsWindowChrome adds resize styles and handles system commands.
     flags: Qt.platform.os === "windows"
-           ? Qt.Window
+           ? Qt.Window | Qt.FramelessWindowHint
            : Qt.Window | Qt.ExpandedClientAreaHint | Qt.NoTitleBarBackgroundHint
 
     // 加了上面那两个 flag 之后窗口的可绘制区域顶到了最上沿，但 ApplicationWindow 仍然
@@ -87,7 +88,17 @@ ApplicationWindow {
     // connection spinner, the quit page) are never white-on-white.
     // A transparent Qt client surface lets the Windows 11 system backdrop show
     // through. Other platforms keep the normal solid application background.
+    // Keep the swapchain transparent from creation; the background below
+    // supplies an opaque fallback until the native backdrop is available.
     color: Qt.platform.os === "windows" ? "transparent" : Theme.ink
+
+    // A light tint keeps the native wallpaper-derived material visible while
+    // retaining contrast. Unsupported Windows versions keep the solid color.
+    background: Rectangle {
+        color: windowsWindowChrome.micaAvailable
+               ? Qt.rgba(Theme.ink.r, Theme.ink.g, Theme.ink.b, Theme.isLight ? 0.18 : 0.26)
+               : Theme.ink
+    }
 
     MaterialStyle.Material.theme: Theme.isLight ? MaterialStyle.Material.Light : MaterialStyle.Material.Dark
     MaterialStyle.Material.background: Theme.ink

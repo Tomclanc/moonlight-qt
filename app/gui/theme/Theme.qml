@@ -20,8 +20,8 @@ QtObject {
     readonly property color ink: isLight ? "#F4F6F8" : "#0F1115"
     readonly property color surface: isLight ? "#FFFFFF" : "#171A20"
     readonly property color surface2: isLight ? "#E9EEF2" : "#1F232B"
-    readonly property color surfaceLayer: isLight ? "#D9FFFFFF" : "#D9171A20"
-    readonly property color surface2Layer: isLight ? "#E6E9EEF2" : "#E61F232B"
+    readonly property color surfaceLayer: isLight ? "#BFFFFFFF" : "#BF171A20"
+    readonly property color surface2Layer: isLight ? "#D9E9EEF2" : "#D91F232B"
     readonly property color line: isLight ? "#CBD3DA" : "#2B3038"
     readonly property color lineStrong: isLight ? "#87939E" : "#3C434E"
 
@@ -50,9 +50,9 @@ QtObject {
 
     // 零模糊、纯偏移的实心投影，对应 box-shadow: 6px 6px #0000008c。
     // QML 没有 box-shadow，Panel.qml 用一个偏移的实心矩形垫在本体后面模拟。
-    readonly property int shadowOffset: 6
-    readonly property int shadowOffsetLift: 9     // hover/focus 抬起时的投影
-    readonly property color shadowColor: isLight ? "#40000000" : "#8C000000"
+    readonly property int shadowOffset: 2
+    readonly property int shadowOffsetLift: 4
+    readonly property color shadowColor: isLight ? "#18000000" : "#38000000"
 
     // border-left 粗条，参考站用 5px/9px 做强调，我们卡片用 4、状态标记用 5
     readonly property int accentBar: 4

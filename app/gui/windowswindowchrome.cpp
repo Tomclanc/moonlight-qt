@@ -188,10 +188,22 @@ void WindowsWindowChrome::activate()
 
     const HWND nativeWindow = reinterpret_cast<HWND>(m_WindowId);
     const LONG_PTR style = GetWindowLongPtrW(nativeWindow, GWL_STYLE);
+    // Qt paints the complete client surface. Native non-client painting can
+    // otherwise leave a cached resize border at the previous window bounds
+    // underneath the translucent QML scene after maximizing.
+    const DWMNCRENDERINGPOLICY renderingPolicy = DWMNCRP_DISABLED;
+    DwmSetWindowAttribute(nativeWindow, DWMWA_NCRENDERING_POLICY,
+                          &renderingPolicy, sizeof(renderingPolicy));
     SetLastError(ERROR_SUCCESS);
+    // Keep native resizing and system commands, but remove the native caption
+    // and its system-menu icon. QML supplies all title-bar controls.
+    // Extending the DWM frame for Mica otherwise paints a second set of
+    // caption buttons above the QML controls, even with WM_NCCALCSIZE handled.
+    const LONG_PTR customFrameStyle =
+            ((style & ~WS_POPUP) | WS_OVERLAPPEDWINDOW) & ~(WS_CAPTION | WS_SYSMENU);
     if (SetWindowLongPtrW(nativeWindow,
                           GWL_STYLE,
-                          (style & ~WS_POPUP) | WS_OVERLAPPEDWINDOW) == 0) {
+                          customFrameStyle) == 0) {
         const DWORD error = GetLastError();
         if (error != ERROR_SUCCESS) {
             qWarning() << "Failed to apply native window styles:" << error;
@@ -243,10 +255,22 @@ void WindowsWindowChrome::applyNativeAppearance()
                           windowCornerPreference,
                           &roundCorners,
                           sizeof(roundCorners));
-    DwmSetWindowAttribute(nativeWindow,
+    const HRESULT backdropResult = DwmSetWindowAttribute(nativeWindow,
                           systemBackdropType,
                           &mainWindowBackdrop,
                           sizeof(mainWindowBackdrop));
+    // Extend the compositor material behind the entire transparent Qt surface.
+    // Without this, a custom non-client frame can hide Mica in the client area.
+    const MARGINS margins = { -1, -1, -1, -1 };
+    const HRESULT frameResult = SUCCEEDED(backdropResult)
+            ? DwmExtendFrameIntoClientArea(nativeWindow, &margins) : E_FAIL;
+    const bool available = SUCCEEDED(backdropResult) && SUCCEEDED(frameResult);
+    if (m_MicaAvailable != available) {
+        m_MicaAvailable = available;
+        emit micaAvailableChanged();
+    }
+    qInfo() << "Mica backdrop active:" << available
+            << "backdrop HRESULT:" << backdropResult << "frame HRESULT:" << frameResult;
 #endif
 }
 
@@ -414,6 +438,19 @@ bool WindowsWindowChrome::nativeEventFilter(const QByteArray& eventType,
         }
         *result = 0;
         return true;
+    }
+
+    if (nativeMessage->message == WM_NCPAINT) {
+        *result = 0;
+        return true;
+    }
+    if (nativeMessage->message == WM_NCACTIVATE) {
+        *result = TRUE;
+        return true;
+    }
+
+    if (nativeMessage->message == WM_DWMCOMPOSITIONCHANGED) {
+        applyNativeAppearance();
     }
 
     if (nativeMessage->message == WM_SIZE ||

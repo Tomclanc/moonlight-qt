@@ -14,6 +14,7 @@ class WindowsWindowChrome : public QObject, public QAbstractNativeEventFilter
     Q_PROPERTY(QQuickItem* titleBar READ titleBar WRITE setTitleBar NOTIFY titleBarChanged)
     Q_PROPERTY(bool maximized READ isMaximized NOTIFY maximizedChanged)
     Q_PROPERTY(bool darkMode READ darkMode WRITE setDarkMode NOTIFY darkModeChanged)
+    Q_PROPERTY(bool micaAvailable READ micaAvailable NOTIFY micaAvailableChanged)
 
 public:
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
@@ -33,6 +34,7 @@ public:
 
     bool isMaximized() const;
     bool darkMode() const;
+    bool micaAvailable() const { return m_MicaAvailable; }
     void setDarkMode(bool darkMode);
 
     Q_INVOKABLE void activate();
@@ -47,6 +49,7 @@ signals:
     void titleBarChanged();
     void maximizedChanged();
     void darkModeChanged();
+    void micaAvailableChanged();
 
 private:
     void postSystemCommand(unsigned int command, const QString& action);
@@ -60,5 +63,6 @@ private:
     bool m_Installed = false;
     bool m_Maximized = false;
     bool m_DarkMode = false;
+    bool m_MicaAvailable = false;
     bool m_StateUpdatePending = false;
 };
