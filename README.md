@@ -1,7 +1,7 @@
 # Moonlight V+ for PC
 
 > [!NOTE]
-> `personal-ui-theme-6.5.2` 是 [Tomclanc](https://github.com/Tomclanc) 根据个人审美制作的非官方界面定制分支，并不代表 Moonlight V+ 原项目的默认设计方向。具体改动与适用范围请参阅 [个人界面定制说明](PERSONAL_UI_CUSTOMIZATION.md)。
+> `personal-ui-theme-6.5.3` 是 [Tomclanc](https://github.com/Tomclanc) 根据个人审美制作的非官方界面定制分支，并不代表 Moonlight V+ 原项目的默认设计方向。具体改动与适用范围请参阅 [个人界面定制说明](PERSONAL_UI_CUSTOMIZATION.md)。
 
 [English](README.en.md)
 

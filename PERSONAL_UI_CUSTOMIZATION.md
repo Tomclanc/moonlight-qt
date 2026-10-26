@@ -16,11 +16,13 @@ This is an unofficial Moonlight V+ interface customization by [Tomclanc](https:/
 
 - Windows 图形界面采用单实例，重复打开时唤起原窗口，最小化时恢复。
 - 修复重复窗口按钮、旧标题栏和最大化背景矩形残影。
-- 保留 Moonlight V+ 6.5.2 的 AMD AMF 生命周期、视频增强和主机文件定位修复。
+- 保留 Moonlight V+ 6.5.3 的 AMD AMF 生命周期、视频增强和主机文件定位修复。
+
+- 保留 6.5.3 的 D3D11 解码填充和 AMF 输出纹理采样修复，并通过其采样回归测试。
 
 ## 验证环境
 
-- Moonlight V+ 6.5.2 Personal UI（2026-10-26 迁移）
+- Moonlight V+ 6.5.3 Personal UI（2026-10-26 迁移）
 - Windows 11
 - Qt 6.7.2 MSVC 64-bit
 - 已验证亮色界面、设置面板、手动添加电脑弹窗、主题图标、圆角滚动条和主题提示框。

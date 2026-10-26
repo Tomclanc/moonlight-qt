@@ -1,7 +1,7 @@
 # Moonlight V+ for PC
 
 > [!NOTE]
-> `personal-ui-theme-6.5.2` is an unofficial visual customization by [Tomclanc](https://github.com/Tomclanc), based on personal aesthetic preferences. It does not represent the default design direction of the Moonlight V+ project. See [Personal UI Customization](PERSONAL_UI_CUSTOMIZATION.md) for details and scope.
+> `personal-ui-theme-6.5.3` is an unofficial visual customization by [Tomclanc](https://github.com/Tomclanc), based on personal aesthetic preferences. It does not represent the default design direction of the Moonlight V+ project. See [Personal UI Customization](PERSONAL_UI_CUSTOMIZATION.md) for details and scope.
 
 [中文](README.md)
 
