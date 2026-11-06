@@ -20,9 +20,11 @@ This is an unofficial Moonlight V+ interface customization by [Tomclanc](https:/
 
 - 保留 6.5.3 的 D3D11 解码填充和 AMF 输出纹理采样修复，并通过其采样回归测试。
 
+- 保留 6.5.4 的设置搜索、DualSense、剪贴板和键盘重连修复。
+
 ## 验证环境
 
-- Moonlight V+ 6.5.3 Personal UI（2026-10-26 迁移）
+- Moonlight V+ 6.5.4 Personal UI（2026-11-06 迁移）
 - Windows 11
 - Qt 6.7.2 MSVC 64-bit
 - 已验证亮色界面、设置面板、手动添加电脑弹窗、主题图标、圆角滚动条和主题提示框。
